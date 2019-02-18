@@ -1,8 +1,9 @@
-const int photoresistor = 12;
+const int photoresistor = A0;
 int value;
 
 void setup() {
   pinMode(photoresistor, INPUT);
+  Serial.begin(9600);
 }
 
 void loop() {

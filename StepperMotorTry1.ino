@@ -5,11 +5,11 @@
 #define IN4 5
 int Steps = 200;
 int cstep = 0;
-Stepper motor(Steps, 2, 3, 4, 5);
+Stepper motor(400, 2, 3, 4, 5);
 
 void setup() {
   // put your setup code here, to run once:
-  motor.setSpeed(60);
+  motor.setSpeed(100);
 
 }
 //Stepper(steps, pin1, pin2)
@@ -22,7 +22,8 @@ void loop() {
   
   motor.step(Steps); //clockwise
   delay(500);
-  motor.step(-Steps); //counter clockwise 
+  motor.step(-Steps); //counter clockwise
+  delay(500); 
 
 }
 //reference: https://www.arduino.cc/en/Tutorial/StepperOneRevolution
