@@ -40,7 +40,7 @@ void loop() {
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
       }
-      delay(1000);
+      delay(500);
     }
   }
 }
