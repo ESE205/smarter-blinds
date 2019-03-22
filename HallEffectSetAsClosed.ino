@@ -10,7 +10,7 @@ int Pin2 = 10;
 int Pin3 = 11;
 int _step = 0;
 int current_steps = 0;
-int steps_needed = 478 *5; //2*2038; //(4076 is one revolution)
+int steps_needed = 478; //2*2038; //(4076 is one revolution) // 478 steps is 1 degree
 boolean dir = true;
 int degrees_to_move;
 
@@ -21,27 +21,31 @@ void setup() {
   pinMode(Pin1, OUTPUT);
   pinMode(Pin2, OUTPUT);
   pinMode(Pin3, OUTPUT);
-}
-
-void loop() {
   while (closed == false) {
-  //  current_steps=0;
+  current_steps=0;
     hallState = digitalRead(hallPin);
     if (hallState == LOW) {
       Serial.println("detect");
       bool closed = true;
+      break;
     } else {
       Serial.println();
       bool closed = false;
       // steps_needed = 478;
       while (current_steps <= steps_needed) {
        stepperMotorFunction();
-//       Serial.println("Functioning");
-//       Serial.print(current_steps);
       }
       delay(100);
     }
   }
+}
+
+void loop() {
+
+//  if (closed == true) {
+//    dir = false;
+//     stepperMotorFunction();
+//  }
 }
 
 
