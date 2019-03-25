@@ -14,6 +14,12 @@ int steps_needed = 478; //2*2038; //(4076 is one revolution) // 478 steps is 1 d
 boolean dir = true;
 int degrees_to_move;
 
+//variables for user input
+//int temp = 0;
+//int light = 0;
+//int userTemp = 0;
+//int userLight = 0;
+
 void setup() {
   Serial.begin(9600);
   pinMode(hallPin, INPUT);
@@ -38,14 +44,16 @@ void setup() {
       delay(100);
     }
   }
+  //userTemp = digitalRead();
+  //userLight = digitalRead();
 }
 
 void loop() {
-
 //  if (closed == true) {
 //    dir = false;
 //     stepperMotorFunction();
 //  }
+  
 }
 
 
@@ -94,7 +102,7 @@ void stepperMotorFunction() {
       digitalWrite(Pin1, LOW);
       digitalWrite(Pin2, LOW);
       digitalWrite(Pin3, LOW);
-      break;
+      break; 
     case 7:
       digitalWrite(Pin0, HIGH);
       digitalWrite(Pin1, LOW);
@@ -128,4 +136,5 @@ void stepperMotorFunction() {
   delay(1);   
  // Serial.print("stepper function");
   return current_steps;
+  
 }
