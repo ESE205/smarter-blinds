@@ -13,7 +13,7 @@ int current_steps = 0;
 int steps_needed = 478; //2*2038; //(4076 is one revolution) // 478 steps is 1 degree
 boolean dir = true;
 int degrees_to_move;
-double amount_over
+double amount_over;
 
 //temperature sensor
 int temperaturePin = 0;
@@ -122,18 +122,18 @@ void loop() {
   delay(2000);
   // }
 
-  if (getBrightness() - ideal_bright < 0) {
+  if (value - ideal_bright < 0) {
     dir = true;
-    amount_over = (ideal_bright / getBrightness());
-    steps_needed = 44836 * amount_over;
+    amount_over = (ideal_bright / value);
+    steps_needed = 44836 * (1 - amount_over);
     current_steps = 0;
     while (current_steps <= steps_needed) {
       stepperMotorFunction();
     }
   } else {
-    if (ideal_bright - getBrightness() < 0) {
+    if (ideal_bright - value < 0) {
       dir = false;
-      steps_needed = (44836 * (ideal_bright / getBrightness()));
+      steps_needed = (44836 * (1 - (ideal_bright / value)));
       current_steps = 0;
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
