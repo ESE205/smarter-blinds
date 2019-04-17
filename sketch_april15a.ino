@@ -40,6 +40,7 @@ int new_position;
 int bright_scale = -1000;
 int ideal_temp = -1000;
 int ideal_bright;
+int temp_two = -1000;
 //int adjust_temp_input = -1000;
 //int adjust_bright_input = -1000;
 int adjust_input = -1000;
@@ -155,6 +156,23 @@ void loop() {
     Serial.print("ideal temperature "); Serial.println(ideal_temp);
     Serial.print("current temperature "); Serial.println(temperatureF);
     Serial.println();
+    Serial.print("Would you like to change ideal temperature?");
+    Serial.println(" Enter ideal temperature");
+    if (Serial.available()) {
+      while (temp_two == -1000) {
+        while (Serial.available() > 0) {
+          int temp2Char = Serial.read();
+          if (isDigit(temp2Char)) {
+            newString = (char)temp2Char;
+          }
+          temp_two = newString.toInt();
+        }
+        Serial.println(temp_two);
+        delay(200);
+      }
+      ideal_temp = temp_two;
+    }
+
     delay(2000);
     if (temperatureF <= ideal_temp + 1 && temperatureF >= ideal_temp - 1 ) { //temperature is within a 1 degree range, no movement necessary
       adjustment_made_ccw = false;
@@ -228,8 +246,6 @@ void loop() {
     Serial.println("Would you like to change the brightness?");
     Serial.println(" If so, enter a number on a scale of 1-5 (5 is bright)");
     if (Serial.available()) {
-      //      Serial.println("Would you like to change the brightness?");
-      //      Serial.print(" If so, enter a number on a scale of 1-5 (5 is bright)");
       while (bright_scale_two == -1000) {
         while (Serial.available() > 0) {
           Serial.flush();
