@@ -11,8 +11,6 @@
 #include <Softwareble.h>
 #endif
 
-
-
 #define FACTORYRESET_ENABLE         1
 #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
 #define MODE_LED_BEHAVIOUR          "MODE"
@@ -35,15 +33,14 @@ void error(const __FlashStringHelper*err) {
   while (1);
 }
 
-
 //hall effect
 const int hallPin = 9; //old is 12
 int hallState = 0;
 bool closed = false;
 
-String emptyString = " ";
+//String emptyString = " ";
 String newString = " ";
-String inputString = " ";
+//String inputString = " ";
 String otherString = " ";
 
 //stepper motor
@@ -55,14 +52,13 @@ int _step = 0;
 int current_steps = 0;
 int steps_needed = 478; //2*2038; //(4076 is one revolution) // 478 steps is 1 degree
 boolean dir = true;
-int degrees_to_move;
-double amount_over;
+
 
 //temperature sensor
 int temperaturePin = A0;
 float voltage;
-float temperatureC;
-float temperatureF;
+double temperatureC;
+double temperatureF;
 bool adjustment_made_ccw;
 bool adjustment_made_cw;
 bool isDark;
@@ -79,14 +75,12 @@ int bright_scale = -1000;
 int ideal_temp = -1000;
 int ideal_bright;
 int temp_two = -1000;
-//int adjust_temp_input = -1000;
-//int adjust_bright_input = -1000;
 int adjust_input = -1000;
 bool adjust_temp;
 bool adjust_bright;
 bool adjust_both;
 int bright_scale_two = -1000;
-int ideal_bright_two;
+//int ideal_bright_two;
 int new_brightness = -1000;
 bool new_brightness_adjusted = true;
 
@@ -199,6 +193,7 @@ void setup() {
 
   ble.print("Do you want to control brightness or temperature? Enter 0 for Brightness, 1 for Temperature");
   while (adjust_input == -1000) {
+    String inputString = " ";
     while (ble.available() > 0) {
       int inputChar = ble.read();
       if (isDigit(inputChar)) {
@@ -222,6 +217,7 @@ void setup() {
 
   if (adjust_temp == true) {
     ble.println(" Enter ideal temperature");
+    String emptyString = " ";
     while (ideal_temp == -1000) {
       while (ble.available () > 0) {
         int tempChar = ble.read();
@@ -236,7 +232,7 @@ void setup() {
     ble.print("Ideal temperature: "); ble.println(ideal_temp);
     dir = false;
     current_steps = 0;
-    steps_needed = (4076 *8);
+    steps_needed = (4076 * 8);
     while (current_steps <= steps_needed) {
       stepperMotorFunction();
     }
@@ -285,7 +281,7 @@ void loop() {
     ble.print("ideal temperature "); ble.println(ideal_temp);
     ble.print("current temperature "); ble.println(temperatureF);
     ble.println();
-   delay(5000);
+    delay(5000);
     ble.print("Would you like to change ideal temperature?");
     ble.println(" Enter new ideal temperature");
     delay(200);
@@ -302,7 +298,27 @@ void loop() {
         delay(200);
       }
       ble.println(temp_two);
+      // ideal_temp = temp_two;
+      if (temp_two <= temperatureF + 1 && temp_two >= temperatureF - 1 && adjustment_made_cw == true) {
+        dir = false;
+        current_steps = 0;
+        steps_needed = 4076 * 2.5;
+        while (current_steps <= steps_needed) {
+          stepperMotorFunction();
+        }
+        adjustment_made_cw = false;
+      }
+      if (temp_two <= temperatureF + 1 && temp_two >= temperatureF - 1 && adjustment_made_ccw == true) {
+          dir = true;
+        current_steps = 0;
+        steps_needed = 4076 * 2.5;
+        while (current_steps <= steps_needed) {
+          stepperMotorFunction();
+        }
+        adjustment_made_ccw = false;
+      }
       ideal_temp = temp_two;
+      temp_two = -1000;
     }
 
     delay(2000);
@@ -372,7 +388,7 @@ void loop() {
     } if (value >= 300) {
       isDark = false;
     }
- 
+
     if (isClosedDarkness == false && isDark == true) {
       dir = false;
       steps_needed = (5 - current_position) * (1.1 * 4076);
@@ -443,8 +459,6 @@ void loop() {
       current_position = bright_scale;
       delay (2000);
     }
-
-
   }
 }
 
@@ -455,7 +469,7 @@ float getVoltage(int pin) {
   return (reading);
 }
 
-float getTemperature() {
+double getTemperature() {
   voltage = getVoltage(temperaturePin);
   //ble.println(voltage);
   temperatureC = ((voltage - .5) * 100);
@@ -464,7 +478,7 @@ float getTemperature() {
   return temperatureF;
 }
 
-float getBrightness () {
+int getBrightness () {
   value = analogRead(photoresistor);
   return value;
 }
