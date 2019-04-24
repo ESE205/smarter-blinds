@@ -263,7 +263,7 @@ void setup() {
     }
     ble.print("Ideal brightness: "); ble.println(bright_scale);
     dir = true;
-    steps_needed = (4076 * 4) + (5 - bright_scale) * (4076 * 1);
+    steps_needed = (4076 * 4) + (5 - bright_scale) * (4076 * 0.9);
     while (current_steps <= steps_needed) {
       stepperMotorFunction();
     }
@@ -399,16 +399,16 @@ void loop() {
   while (adjust_bright == true) {
     delay(2000);
     value = getBrightness();
-    if (value < 150) {
+    if (value < 170) {
       isDark = true;
-    } if (value >= 150) {
+    } if (value >= 170) {
       isDark = false;
     }
 
     if (isClosedDarkness == false && isDark == true) {
-      ble.print("dark but not closed");
+      ble.print("Note: dark but not closed");
       dir = true;
-      steps_needed = (5 - current_position) * (0.9 * 4076);
+      steps_needed = (current_position) * (4076*0.7);
       current_steps = 0;
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
@@ -418,9 +418,9 @@ void loop() {
     }
 
     if (isClosedDarkness == true && isDark == false) {
-      ble.print("closed but not dark");
+      ble.print("Note: closed but not dark");
       dir = false;
-      steps_needed = (current_position) * (0.9 * 4076);
+      steps_needed = (current_position) * (4076);
       current_steps = 0;
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
@@ -428,8 +428,9 @@ void loop() {
       isClosedDarkness = false;
     }
     //  ble.print("ideal brightness "); ble.println(ideal_bright);
-    ble.print("current brightness "); ble.println(value);
+   // ble.print("current brightness "); ble.println(value);
     delay(5000);
+    ble.println();
     ble.println("Would you like to change the brightness?");
     ble.println(" If so, enter a number on a scale of 1-5 (5 is bright)");
     delay(200);
@@ -454,20 +455,20 @@ void loop() {
 
 
     if ((new_brightness_adjusted == false)) {
-      ble.print("hit if");
+     // ble.print("hit if");
       if (new_brightness > current_position) {
-        ble.print("new > current");
+      //  ble.print("new > current");
         dir = false; //was false
         current_steps = 0;
-        steps_needed = (new_brightness - current_position) * (0.9 * 4076);
+        steps_needed = (new_brightness - current_position) * (1 * 4076);
         while (current_steps <= steps_needed) {
           stepperMotorFunction();
         }
       } if (new_brightness < current_position) {
-        ble.print("new < current");
+       // ble.print("new < current");
         dir = true;
         current_steps = 0;
-        steps_needed = (current_position - new_brightness) * (0.9 * 4076);
+        steps_needed = (current_position - new_brightness) * (1 * 4076);
         while (current_steps <= steps_needed) {
           stepperMotorFunction();
         }
@@ -475,15 +476,10 @@ void loop() {
       current_position = new_brightness;
       new_brightness_adjusted = true;
     }
-//    } else {
-//      current_position = bright_scale;
-//      delay (2000);
-//    }
   }
 }
 
 float getVoltage(int pin) {
-  // ble.println(analogRead(pin));
   float reading = (analogRead(pin) * 3.3);
   reading /= 1024.0;
   return (reading);

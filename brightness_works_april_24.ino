@@ -406,9 +406,9 @@ void loop() {
     }
 
     if (isClosedDarkness == false && isDark == true) {
-      ble.print("dark but not closed");
+      ble.print("Note: dark but not closed");
       dir = true;
-      steps_needed = (current_position) * (4076);
+      steps_needed = (current_position) * (4076*0.7);
       current_steps = 0;
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
@@ -418,7 +418,7 @@ void loop() {
     }
 
     if (isClosedDarkness == true && isDark == false) {
-      ble.print("closed but not dark");
+      ble.print("Note: closed but not dark");
       dir = false;
       steps_needed = (current_position) * (4076);
       current_steps = 0;
@@ -460,7 +460,7 @@ void loop() {
       //  ble.print("new > current");
         dir = false; //was false
         current_steps = 0;
-        steps_needed = (new_brightness - current_position) * (0.9 * 4076);
+        steps_needed = (new_brightness - current_position) * (1 * 4076);
         while (current_steps <= steps_needed) {
           stepperMotorFunction();
         }
@@ -468,7 +468,7 @@ void loop() {
        // ble.print("new < current");
         dir = true;
         current_steps = 0;
-        steps_needed = (current_position - new_brightness) * (0.9 * 4076);
+        steps_needed = (current_position - new_brightness) * (1 * 4076);
         while (current_steps <= steps_needed) {
           stepperMotorFunction();
         }
