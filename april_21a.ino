@@ -406,6 +406,7 @@ void loop() {
     }
 
     if (isClosedDarkness == false && isDark == true) {
+      ble.print("dark but not closed");
       dir = true;
       steps_needed = (5 - current_position) * (0.9 * 4076);
       current_steps = 0;
@@ -417,6 +418,7 @@ void loop() {
     }
 
     if (isClosedDarkness == true && isDark == false) {
+      ble.print("closed but not dark");
       dir = false;
       steps_needed = (current_position) * (0.9 * 4076);
       current_steps = 0;
