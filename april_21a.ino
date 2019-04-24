@@ -51,7 +51,7 @@ int Pin3 = A5; // 11
 int _step = 0;
 int current_steps = 0;
 int steps_needed = 478; //2*2038; //(4076 is one revolution) // 478 steps is 1 degree
-boolean dir = true;
+boolean dir = true; //true = counter clockwise 
 
 
 //temperature sensor
@@ -59,8 +59,8 @@ int temperaturePin = A0;
 float voltage;
 double temperatureC;
 double temperatureF;
-bool adjustment_made_ccw;
-bool adjustment_made_cw;
+bool adjustment_made_ccw = false;
+bool adjustment_made_cw = false;
 bool isDark;
 bool isClosedDarkness = false;
 
@@ -99,18 +99,18 @@ void setup() {
   Serial.println(F("------------------------------------------------"));
 
   /* Initialise the module */
-  Serial.print(F("Initialising the Bluefruit LE module: "));
+  //Serial.print(F("Initialising the Bluefruit LE module: "));
 
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
-  Serial.println( F("OK!") );
+  // Serial.println( F("OK!") );
 
   if ( FACTORYRESET_ENABLE )
   {
     /* Perform a factory reset to make sure everything is in a known state */
-    Serial.println(F("Performing a factory reset: "));
+    //   Serial.println(F("Performing a factory reset: "));
     if ( ! ble.factoryReset() ) {
       error(F("Couldn't factory reset"));
     }
@@ -119,13 +119,13 @@ void setup() {
   /* Disable command echo from Bluefruit */
   ble.echo(false);
 
-  Serial.println("Requesting Bluefruit info:");
+  // Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
 
-  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in UART mode"));
-  Serial.println(F("Then Enter characters to send to Bluefruit"));
-  Serial.println();
+  // Serial.println(F("Please use Adafruit Bluefruit LE app to connect in UART mode"));
+  //Serial.println(F("Then Enter characters to send to Bluefruit"));
+  // Serial.println();
 
   ble.verbose(false);  // debug info is a little annoying after this point!
 
@@ -140,12 +140,12 @@ void setup() {
   if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
     // Change Mode LED Activity
-    Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOUR));
+    //  Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOUR));
     ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOUR);
   }
 
   // Set module to DATA mode
-  Serial.println( F("Switching to DATA mode!") );
+  // Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
   Serial.println(F("******************************"));
@@ -174,6 +174,7 @@ void setup() {
   pinMode(Pin2, OUTPUT);
   pinMode(Pin3, OUTPUT);
   while (closed == false) {
+    dir = false;
     current_steps = 0;
     hallState = digitalRead(hallPin);
     if (hallState == LOW) {
@@ -230,7 +231,7 @@ void setup() {
       delay(200);
     }
     ble.print("Ideal temperature: "); ble.println(ideal_temp);
-    dir = false;
+    dir = true;
     current_steps = 0;
     steps_needed = (4076 * 8);
     while (current_steps <= steps_needed) {
@@ -260,7 +261,7 @@ void setup() {
       delay(200);
     }
     ble.print("Ideal brightness: "); ble.println(bright_scale);
-    dir = false;
+    dir = true;
     steps_needed = (4076 * 5.5) + (5 - bright_scale) * (4076 * 1.1);
     while (current_steps <= steps_needed) {
       stepperMotorFunction();
@@ -276,18 +277,20 @@ void setup() {
 
 void loop() {
   while (adjust_temp == true) {
+    bool new_adjustment;
     delay(2000);
     temperatureF = getTemperature();
-    ble.print("ideal temperature "); ble.println(ideal_temp);
-    ble.print("current temperature "); ble.println(temperatureF);
+   
     ble.println();
     delay(5000);
     ble.print("Would you like to change ideal temperature?");
     ble.println(" Enter new ideal temperature");
     delay(200);
+    newString = " ";
     if (ble.available()) {
       while (temp_two == -1000) {
         while (ble.available() > 0) {
+          new_adjustment = false;
           int temp2Char = ble.read();
           if (isDigit(temp2Char)) {
             newString += (char)temp2Char;
@@ -297,29 +300,39 @@ void loop() {
         // ble.println(temp_two);
         delay(200);
       }
-      ble.println(temp_two);
-      // ideal_temp = temp_two;
-      if (temp_two <= temperatureF + 1 && temp_two >= temperatureF - 1 && adjustment_made_cw == true) {
-        dir = false;
-        current_steps = 0;
-        steps_needed = 4076 * 2.5;
-        while (current_steps <= steps_needed) {
-          stepperMotorFunction();
-        }
-        adjustment_made_cw = false;
-      }
-      if (temp_two <= temperatureF + 1 && temp_two >= temperatureF - 1 && adjustment_made_ccw == true) {
-          dir = true;
-        current_steps = 0;
-        steps_needed = 4076 * 2.5;
-        while (current_steps <= steps_needed) {
-          stepperMotorFunction();
-        }
-        adjustment_made_ccw = false;
-      }
       ideal_temp = temp_two;
       temp_two = -1000;
+//       if (temp_two <= temperatureF + 1 && temp_two >= temperatureF - 1 && adjustment_made_cw == true && new_adjustment == false) {
+//      dir = false;
+//      current_steps = 0;
+//      steps_needed = 4076 * 2.5;
+//      while (current_steps <= steps_needed) {
+//        stepperMotorFunction();
+//      }
+//      adjustment_made_cw = false;
+//      new_adjustment = true;
+//      ideal_temp = temp_two;
+//      temp_two = -1000;
+//    }
+//    if (temp_two <= temperatureF + 1 && temp_two >= temperatureF - 1 && adjustment_made_ccw == true && new_adjustment == false) {
+//      dir = true;
+//      current_steps = 0;
+//      steps_needed = 4076 * 2.5;
+//      while (current_steps <= steps_needed) {
+//        stepperMotorFunction();
+//      }
+//      adjustment_made_ccw = false;
+//      new_adjustment = true;
+//      ideal_temp = temp_two;
+//      temp_two = -1000;
+//    }
     }
+     ble.print("ideal temperature "); ble.println(ideal_temp);
+    ble.print("current temperature "); ble.println(temperatureF);
+    //  ble.println(temp_two);
+    // ideal_temp = temp_two;
+   
+
 
     delay(2000);
     if (temperatureF <= ideal_temp + 1 && temperatureF >= ideal_temp - 1 ) { //temperature is within a 1 degree range, no movement necessary
@@ -328,18 +341,6 @@ void loop() {
       delay (5000);
     } else {
       if ((temperatureF >= ideal_temp + 1) && adjustment_made_ccw == false && adjustment_made_cw == false) { // temperature is greater than ideal, and initial position, no changes made
-        dir = false;
-        current_steps = 0;
-        steps_needed = 4076 * 2.5;
-        while (current_steps <= steps_needed) {
-          stepperMotorFunction();
-        }
-        current_steps = 0;
-        adjustment_made_ccw = true;
-        adjustment_made_cw = false;
-        delay(2000);
-      }
-      if ((temperatureF <= ideal_temp - 1) && adjustment_made_ccw == false && adjustment_made_cw == false)  {
         dir = true;
         current_steps = 0;
         steps_needed = 4076 * 2.5;
@@ -347,8 +348,20 @@ void loop() {
           stepperMotorFunction();
         }
         current_steps = 0;
-        adjustment_made_cw = true;
         adjustment_made_ccw = false;
+        adjustment_made_cw = true;
+        delay(2000);
+      }
+      if ((temperatureF <= ideal_temp - 1) && adjustment_made_ccw == false && adjustment_made_cw == false)  {
+        dir = false;
+        current_steps = 0;
+        steps_needed = 4076 * 2.5;
+        while (current_steps <= steps_needed) {
+          stepperMotorFunction();
+        }
+        current_steps = 0;
+        adjustment_made_cw = false;
+        adjustment_made_ccw = true;
         delay(2000);
       }
 
@@ -390,7 +403,7 @@ void loop() {
     }
 
     if (isClosedDarkness == false && isDark == true) {
-      dir = false;
+      dir = true;
       steps_needed = (5 - current_position) * (1.1 * 4076);
       current_steps = 0;
       while (current_steps <= steps_needed) {
@@ -401,7 +414,7 @@ void loop() {
     }
 
     if (isClosedDarkness == true && isDark == false) {
-      dir = true;
+      dir = false;
       steps_needed = (current_position) * (1.1 * 4076);
       current_steps = 0;
       while (current_steps <= steps_needed) {
