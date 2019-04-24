@@ -262,7 +262,7 @@ void setup() {
     }
     ble.print("Ideal brightness: "); ble.println(bright_scale);
     dir = true;
-    steps_needed = (4076 * 5.5) + (5 - bright_scale) * (4076 * 1.1);
+    steps_needed = (4076 * 5.5) + (5 - bright_scale) * (4076 * 1);
     while (current_steps <= steps_needed) {
       stepperMotorFunction();
     }
@@ -340,6 +340,7 @@ void loop() {
       adjustment_made_cw = false;
       delay (5000);
     } else {
+      //at ideal position and needs to cool
       if ((temperatureF >= ideal_temp + 1) && adjustment_made_ccw == false && adjustment_made_cw == false) { // temperature is greater than ideal, and initial position, no changes made
         dir = true;
         current_steps = 0;
@@ -352,6 +353,7 @@ void loop() {
         adjustment_made_cw = true;
         delay(2000);
       }
+      //at ideal position and needs to warm up
       if ((temperatureF <= ideal_temp - 1) && adjustment_made_ccw == false && adjustment_made_cw == false)  {
         dir = false;
         current_steps = 0;
@@ -364,7 +366,7 @@ void loop() {
         adjustment_made_ccw = true;
         delay(2000);
       }
-
+      // if temp in range but at warming position 
       if ((temperatureF <= ideal_temp + 1) && (temperatureF >= ideal_temp - 1) && (adjustment_made_ccw == true)) {
         current_steps = 0;
         dir = true;
@@ -377,7 +379,7 @@ void loop() {
         adjustment_made_ccw = false;
         delay(2000);
       }
-
+      // if temp in range but at cooling position 
       if ((temperatureF <= ideal_temp + 1) && (temperatureF >= ideal_temp - 1) && (adjustment_made_cw == true)) {
         dir = false;
         current_steps = 0;
@@ -396,15 +398,15 @@ void loop() {
   while (adjust_bright == true) {
     delay(2000);
     value = getBrightness();
-    if (value < 300) {
+    if (value < 150) {
       isDark = true;
-    } if (value >= 300) {
+    } if (value >= 150) {
       isDark = false;
     }
 
     if (isClosedDarkness == false && isDark == true) {
       dir = true;
-      steps_needed = (5 - current_position) * (1.1 * 4076);
+      steps_needed = (5 - current_position) * (0.9 * 4076);
       current_steps = 0;
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
@@ -415,7 +417,7 @@ void loop() {
 
     if (isClosedDarkness == true && isDark == false) {
       dir = false;
-      steps_needed = (current_position) * (1.1 * 4076);
+      steps_needed = (current_position) * (0.9 * 4076);
       current_steps = 0;
       while (current_steps <= steps_needed) {
         stepperMotorFunction();
@@ -439,8 +441,6 @@ void loop() {
           bright_scale_two = newString.toInt();
         }
         new_brightness = bright_scale_two;
-        //bright_scale_two = -1000;
-        // Serial.println(bright_scale_two);
         delay(200);
       }
       ble.println(new_brightness);
@@ -452,16 +452,16 @@ void loop() {
 
     if ((new_brightness != current_position) && (new_brightness_adjusted == false) && isClosedDarkness == false) {
       if (new_brightness > current_position) {
-        dir = false;
+        dir = false; //was false
         current_steps = 0;
-        steps_needed = (new_brightness - bright_scale) * (1.1 * 4076);
+        steps_needed = (new_brightness - current_position) * (0.9 * 4076);
         while (current_steps <= steps_needed) {
           stepperMotorFunction();
         }
       } if (new_brightness < current_position) {
-        dir = true;
+        dir = false;
         current_steps = 0;
-        steps_needed = (current_position - new_brightness) * (1.1 * 4076);
+        steps_needed = (current_position - new_brightness) * (0.9 * 4076);
         while (current_steps <= steps_needed) {
           stepperMotorFunction();
         }
